@@ -5,6 +5,9 @@ const hashPassword = (plainPassword) => {
 };
 
 const comparePassword = (plainPassword, hashedPassword) => {
+  if (!plainPassword || !hashedPassword) {
+    return false;
+  }
   return bcrypt.compareSync(plainPassword, hashedPassword);
 };
 

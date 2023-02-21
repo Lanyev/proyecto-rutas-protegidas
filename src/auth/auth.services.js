@@ -1,6 +1,9 @@
 const checkUserCredentials = require("./auth.controllers");
 const response = require("../utils/responses.handler");
 const jwt = require("jsonwebtoken");
+const dotenv = require("dotenv");
+
+dotenv.config();
 
 const postLogin = (req, res) => {
   const { email, password } = req.body;
@@ -13,32 +16,32 @@ const postLogin = (req, res) => {
             email: data.email,
             firstName: data.firstName,
           },
-          "academlo",
+          process.env.JWT_SECRET,
           {
-            expiresIn: "1h",
+            expiresIn: "1d",
           }
         );
+
         response.success({
-          status: 200,
-          data: data,
-          message: "Login success",
           res,
+          status: 200,
+          message: "Correct Credentials!",
+          data: token,
         });
       } else {
         response.error({
-          status: 401,
-          data: null,
-          message: "Invalid credentials",
           res,
+          status: 401,
+          message: "Invalid Credentials",
         });
       }
     })
-    .catch((error) => {
+    .catch((err) => {
       response.error({
-        status: 401,
-        data: error,
         res,
-        message: "Something went wrong",
+        status: 401,
+        data: err,
+        message: "Something Bad",
       });
     });
 };

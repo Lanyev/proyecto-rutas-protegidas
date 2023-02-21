@@ -1,11 +1,18 @@
 const { ExtractJwt, Strategy } = require("passport-jwt");
 const passport = require("passport");
+const dotenv = require("dotenv");
 
-const { findUserById } = require("../users/users.controllers");
+dotenv.config();
+
+const {
+  findUserById,
+  updateUser,
+  deleteUser,
+} = require("../users/users.controllers");
 
 const passportConfig = {
   jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
-  secretOrKey: "academlo",
+  secretOrKey: process.env.JWT_SECRET,
 };
 
 passport.use(
@@ -24,4 +31,4 @@ passport.use(
   })
 );
 
-const authMiddleware = passport.authenticate("jwt", { session: false });
+module.exports = passport.authenticate("jwt", { session: false });

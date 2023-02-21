@@ -8,10 +8,10 @@ const checkUserCredentials = async (email, password) => {
     if (verifyPassword) {
       return user;
     } else {
-      return false;
+      return null;
     }
   } catch (error) {
-    return false;
+    return null;
   }
 };
 

@@ -1,5 +1,6 @@
 const usersControllers = require("./users.controllers");
 const responses = require("../utils/responses.handler");
+const { hashPassword } = require("../utils/crypto");
 
 const getAllUsers = (req, res) => {
   usersControllers
@@ -27,7 +28,7 @@ const getUserById = (req, res) => {
   usersControllers
     .findUserById(id)
     .then((data) => {
-      if (data) {
+      if (data !== null) {
         responses.success({
           status: 200,
           data,
@@ -48,6 +49,28 @@ const getUserById = (req, res) => {
         data: err,
         message: "Something bad getting the user",
         res,
+      });
+    });
+};
+
+const getMyUser = (req, res) => {
+  const id = req.user.id;
+  usersControllers
+    .findUserById(id)
+    .then((data) => {
+      responses.success({
+        res,
+        status: 200,
+        message: `Getting User with id: ${id}`,
+        data,
+      });
+    })
+    .catch((err) => {
+      responses.error({
+        res,
+        status: 400,
+        message: "Something bad getting the user",
+        data: err,
       });
     });
 };
@@ -98,7 +121,7 @@ const patchUser = (req, res) => {
         });
       } else {
         responses.error({
-          status: 404,
+          status: 401,
           message: `The user with ID ${id} not found`,
           res,
           fields: {
@@ -130,6 +153,68 @@ const patchUser = (req, res) => {
     });
 };
 
+const patchMyUser = (req, res) => {
+  const id = req.user.id;
+  const { firstName, lastName, email, password, profileImage, phone } =
+    req.body;
+
+  const userObj = {
+    firstName,
+    lastName,
+    email,
+    password: hashPassword(password),
+    profileImage,
+    phone,
+  };
+
+  usersControllers
+    .updateUser(id, userObj)
+    .then(() => {
+      responses.success({
+        res,
+        status: 200,
+        message: "Your user has been updated succesfully!",
+      });
+    })
+    .catch((err) => {
+      responses.error({
+        res,
+        status: 400,
+        message: "Something bad",
+        data: err,
+      });
+    });
+};
+
+const deleteMyUser = (req, res) => {
+  const id = req.user.id;
+
+  usersControllers
+    .deleteUser(id)
+    .then((data) => {
+      if (data) {
+        responses.success({
+          res,
+          status: 200,
+          message: `User with id: ${id} deleted successfully`,
+        });
+      } else {
+        responses.error({
+          res,
+          status: 401,
+          message: `The user with ID ${id} not found`,
+        });
+      }
+    })
+    .catch((err) => {
+      responses.error({
+        res,
+        status: 401,
+        message: `Error ocurred trying to delete user with id ${id}`,
+      });
+    });
+};
+
 const deleteUser = (req, res) => {
   const id = req.params.id;
 
@@ -145,7 +230,7 @@ const deleteUser = (req, res) => {
         });
       } else {
         responses.error({
-          status: 404,
+          status: 401,
           data: err,
           message: `The user with ID ${id} not found`,
           res,
@@ -168,4 +253,7 @@ module.exports = {
   postNewUser,
   patchUser,
   deleteUser,
+  patchMyUser,
+  deleteMyUser,
+  getMyUser,
 };
